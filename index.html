@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="BT World Cup"/>
+<meta name="theme-color" content="#060d18"/>
+<title>🏖️ Beach Tennis World Cup</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#060d18;color:#e8f4f8;min-height:100vh}
+button,input,select{font-family:inherit}
+button{cursor:pointer;border:none;outline:none}
+input{outline:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.spin{animation:spin .8s linear infinite}
+.fade{animation:fade .2s ease}
+
+/* ─ Base ─ */
+.pg{min-height:100vh;padding:20px 14px 60px;background:linear-gradient(135deg,#060d18,#0a1c35 60%,#060d18)}
+.inner{max-width:660px;margin:0 auto}
+.loader{width:34px;height:34px;border:3px solid rgba(56,189,248,.15);border-top-color:#38bdf8;border-radius:50%}
+.full-center{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:linear-gradient(135deg,#060d18,#0a1c35 60%,#060d18)}
+.full-center p{color:#7db8d4;font-size:14px}
+
+/* ─ Typography helpers ─ */
+.sec-label{font-size:11px;font-weight:700;color:#2a4060;letter-spacing:1.2px;text-transform:uppercase;margin:0 0 10px;display:block}
+.empty-msg{font-size:13px;color:#334155;font-style:italic;padding:8px 0}
+
+/* ─ Buttons ─ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;font-weight:700;padding:10px 16px;font-size:14px;transition:opacity .15s}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:linear-gradient(135deg,#0ea5e9,#1d4ed8);color:#fff}
+.btn-ghost{background:rgba(255,255,255,.06);color:#64748b;border:1px solid rgba(255,255,255,.1)}
+.btn-danger{background:none;color:#ef4444;font-size:16px;padding:4px 8px}
+.btn-remove{background:none;color:#334155;font-size:15px;padding:2px 6px}
+.btn-config{background:rgba(255,255,255,.07);color:#94a3b8;border:1px solid rgba(255,255,255,.12)}
+.btn-export{background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(5,150,105,.22));color:#34d399;border:1px solid rgba(52,211,153,.35)}
+.btn-links{width:100%;padding:8px;font-size:12px;background:linear-gradient(135deg,rgba(56,189,248,.1),rgba(37,99,235,.16));color:#7dd3fc;border:1px solid rgba(56,189,248,.22);border-radius:9px}
+.btn-result{width:100%;padding:8px;font-size:12px;background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(217,119,6,.16));color:#fbbf24;border:1px solid rgba(245,158,11,.22);border-radius:9px}
+.btn-alerta{padding:7px 10px;font-size:11px;font-weight:700;background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.3);border-radius:8px}
+.btn-save-big{width:100%;padding:14px;font-size:15px;font-weight:800;background:linear-gradient(135deg,#0ea5e9,#1d4ed8);color:#fff;border-radius:14px;margin-top:28px}
+.btn-add-eq{font-size:12px;font-weight:700;color:#38bdf8;background:rgba(56,189,248,.06);border:1px dashed rgba(56,189,248,.25);border-radius:8px;padding:7px 14px;width:100%}
+.btn-copiar{flex:1;padding:9px;font-size:13px;font-weight:700;background:rgba(56,189,248,.1);color:#7dd3fc;border:1px solid rgba(56,189,248,.25);border-radius:8px}
+.btn-whats{flex:1;padding:9px;font-size:13px;font-weight:700;background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.25);border-radius:8px}
+
+/* ─ Inputs ─ */
+.inp{width:100%;padding:11px 14px;font-size:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#e2eaf0}
+.inp:focus{border-color:rgba(56,189,248,.4)}
+.inp.err{border-color:#ef4444}
+
+/* ─ Overlay / Modal ─ */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+.modal{background:#091525;border:1px solid rgba(56,189,248,.2);border-radius:20px;padding:22px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+.modal-title{font-size:17px;font-weight:800;color:#fff}
+.modal-sub{font-size:12px;color:#7db8d4;margin-top:3px}
+.close-btn{background:none;color:#475569;font-size:20px;line-height:1}
+.modal-section{margin-bottom:18px}
+.modal-section-title{font-size:12px;font-weight:700;color:#38bdf8;letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px}
+.link-row{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:13px;margin-bottom:10px;display:flex;flex-direction:column;gap:9px}
+.link-url-box{background:rgba(0,0,0,.4);border-radius:8px;padding:7px 11px;overflow-x:auto}
+.link-url{font-size:11px;color:#38bdf8;font-family:monospace;word-break:break-all}
+.link-btns{display:flex;gap:7px}
+.modal-dica{font-size:12px;color:#2a4060;text-align:center;margin-top:6px}
+
+/* ─ Painel header ─ */
+.painel-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:12px}
+.painel-title{font-size:24px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.painel-sub{font-size:13px;color:#7db8d4;margin-top:3px}
+.hd-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.stats-box{display:flex;align-items:center;background:rgba(255,255,255,.07);border-radius:12px;padding:9px 16px;gap:11px;border:1px solid rgba(255,255,255,.1)}
+.stat-item{display:flex;flex-direction:column;align-items:center}
+.stat-num{font-size:21px;font-weight:800;color:#38bdf8}
+.stat-num.g{color:#4ade80}.stat-num.y{color:#fbbf24}
+.stat-label{font-size:10px;color:#7db8d4;margin-top:1px}
+.stat-div{width:1px;height:30px;background:rgba(255,255,255,.15)}
+.live-dot{display:inline-block;width:7px;height:7px;background:#4ade80;border-radius:50%;margin-right:5px;animation:pulse 1.5s ease infinite}
+.update-info{font-size:12px;color:#1e3a5f;margin:0 0 14px}
+
+/* ─ Filtro cats ─ */
+.filtro-cats{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}
+.filtro-btn{padding:6px 13px;font-size:13px;font-weight:700;background:rgba(255,255,255,.05);color:#475569;border:1px solid rgba(255,255,255,.08);border-radius:8px;cursor:pointer}
+.filtro-btn.on{background:rgba(56,189,248,.12);color:#38bdf8;border-color:rgba(56,189,248,.3)}
+
+/* ─ Cat section ─ */
+.cat-sec{margin-bottom:28px}
+.cat-sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cat-tag{font-size:12px;font-weight:900;color:#f59e0b;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:7px;padding:3px 11px;letter-spacing:1px}
+.cat-stats-txt{font-size:12px;color:#3a5068}
+
+/* ─ Grupo section (colapsável) ─ */
+.grupo-sec{margin-bottom:14px}
+.grupo-sec-hd{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:7px 2px;user-select:none}
+.grupo-sec-title{font-size:12px;font-weight:700;color:#38bdf8;letter-spacing:.8px;text-transform:uppercase}
+.grupo-toggle{font-size:11px;color:#38bdf8;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);border-radius:5px;padding:2px 8px;transition:transform .2s;display:inline-block}
+.grupo-toggle.col{transform:rotate(-90deg)}
+.grupo-body{overflow:hidden;transition:max-height .3s ease}
+.grupo-body.col{max-height:0!important}
+.confrontos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:11px;padding-bottom:4px}
+
+/* ─ Confronto card ─ */
+.c-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px}
+.c-card.ok{border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.03)}
+.c-card.has-result{border-color:rgba(56,189,248,.25)}
+.c-card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.c-times{font-size:15px;font-weight:800;color:#fff}
+.c-times .vs{color:#334155;margin:0 6px;font-size:13px}
+.c-hd-right{display:flex;gap:5px;align-items:center}
+.badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px}
+.badge.ok{background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.35)}
+.badge.partial{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.35)}
+.badge.pending{background:rgba(148,163,184,.1);color:#64748b;border:1px solid rgba(148,163,184,.2)}
+.badge.result{background:rgba(56,189,248,.15);color:#38bdf8;border:1px solid rgba(56,189,248,.3)}
+.c-body{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.partida-row{display:flex;align-items:flex-start;gap:7px;background:rgba(255,255,255,.03);border-radius:7px;padding:6px 9px}
+.mod-chip{flex-shrink:0;font-size:9px;font-weight:800;padding:2px 5px;border-radius:4px;margin-top:1px}
+.mod-chip.fd{background:rgba(244,114,182,.15);color:#f472b6;border:1px solid rgba(244,114,182,.25)}
+.mod-chip.md{background:rgba(56,189,248,.15);color:#38bdf8;border:1px solid rgba(56,189,248,.25)}
+.mod-chip.mx{background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.25)}
+.pares-row{flex:1;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.par-nome{font-size:11px;color:#7dd3fc;font-weight:600}
+.par-vs{font-size:10px;color:#334155;font-weight:900}
+.par-vazio{font-size:10px;color:#1e3a5f;font-style:italic}
+.c-footer{display:flex;gap:6px;flex-wrap:wrap}
+.quadra-badge{font-size:10px;font-weight:700;background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3);border-radius:6px;padding:2px 7px}
+.timer-badge{font-size:10px;font-weight:700;background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.25);border-radius:6px;padding:2px 7px}
+
+/* ─ Empty ─ */
+.empty-state{text-align:center;padding:50px 20px}
+.empty-icon{font-size:52px;margin-bottom:14px}
+.empty-title{font-size:20px;font-weight:800;color:#fff;margin-bottom:7px}
+.empty-desc{font-size:14px;color:#475569;margin-bottom:22px}
+
+/* ─ Config ─ */
+.cfg-hd{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.back-btn{background:none;color:#7db8d4;font-size:14px;font-weight:700;padding:0}
+.cfg-title{font-size:21px;font-weight:800;color:#fff}
+.cat-btns{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:22px}
+.cat-btn{padding:7px 13px;font-size:13px;font-weight:700;background:rgba(255,255,255,.05);color:#475569;border:1px solid rgba(255,255,255,.08);border-radius:8px;cursor:pointer}
+.cat-btn.on{background:rgba(245,158,11,.12);color:#f59e0b;border-color:rgba(245,158,11,.35)}
+.tabs{display:flex;gap:7px;margin-bottom:18px}
+.tab{flex:1;padding:10px;font-size:14px;font-weight:700;background:rgba(255,255,255,.05);color:#64748b;border:1px solid rgba(255,255,255,.08);border-radius:10px;cursor:pointer}
+.tab.on{background:rgba(56,189,248,.12);color:#38bdf8;border-color:rgba(56,189,248,.25)}
+.grupo-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:14px;margin-bottom:10px}
+.grupo-card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+.grupo-nome-badge{font-size:13px;font-weight:800;color:#f59e0b;background:rgba(245,158,11,.1);border-radius:6px;padding:3px 9px;border:1px solid rgba(245,158,11,.25)}
+.eq-list{display:flex;flex-direction:column;gap:5px;margin-bottom:9px}
+.eq-item{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border-radius:7px;padding:7px 11px}
+.eq-nome{font-size:13px;color:#cbd5e1;font-weight:600}
+.preview-box{margin-top:9px;padding:7px 10px;background:rgba(56,189,248,.05);border-radius:7px;border:1px solid rgba(56,189,248,.12)}
+.preview-txt{font-size:10px;color:#38bdf8;line-height:1.6}
+.add-form{display:flex;flex-direction:column;gap:7px;margin-bottom:7px}
+.add-row{display:flex;gap:7px}
+.times-btns{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}
+.time-btn{display:flex;align-items:center;gap:5px;padding:7px 13px;font-size:13px;font-weight:600;background:rgba(255,255,255,.05);color:#64748b;border:1px solid rgba(255,255,255,.08);border-radius:8px;cursor:pointer}
+.time-btn.on{background:rgba(56,189,248,.12);color:#38bdf8;border-color:rgba(56,189,248,.25)}
+.time-count{font-size:10px;font-weight:800;background:rgba(255,255,255,.1);border-radius:9px;padding:1px 5px}
+.atleta-cfg-list{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.atleta-cfg-item{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:8px 11px}
+.atleta-cfg-nome{font-size:13px;color:#cbd5e1}
+.num-quadras-row{display:flex;align-items:center;gap:10px;margin-bottom:20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px}
+.num-quadras-inp{width:70px;padding:7px 10px;font-size:15px;font-weight:700;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#e2eaf0;text-align:center}
+
+/* ─ Quadra grid ─ */
+.quadras-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.q-btn{padding:10px;font-size:13px;font-weight:700;border-radius:9px;cursor:pointer}
+.q-btn.livre{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
+.q-btn.ocupada{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.3);cursor:default;opacity:.7}
+.q-btn.selecionada{background:rgba(56,189,248,.2);color:#38bdf8;border:1px solid rgba(56,189,248,.5)}
+
+/* ─ Timer ─ */
+.timer-display{font-size:32px;font-weight:800;color:#4ade80;font-family:monospace;letter-spacing:2px;text-align:center;display:block;padding:10px 0}
+.timer-display.stopped{color:#64748b}
+.timer-btns{display:flex;gap:8px;margin-top:10px}
+.timer-btn{flex:1;padding:10px;font-size:14px;font-weight:700;border-radius:9px;cursor:pointer}
+.timer-btn.start{background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
+.timer-btn.pause{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3)}
+.timer-btn.reset{background:rgba(148,163,184,.1);color:#64748b;border:1px solid rgba(148,163,184,.2)}
+
+/* ─ Resultado ─ */
+.result-mod-sec{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:13px;margin-bottom:10px}
+.result-mod-title{font-size:12px;font-weight:800;letter-spacing:.8px;margin-bottom:10px}
+.score-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.score-eq{flex:1;font-size:13px;color:#94a3b8;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.score-inp{width:52px;padding:6px;font-size:16px;font-weight:800;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#e2eaf0;text-align:center}
+.score-sep{font-size:16px;color:#334155;font-weight:900}
+.winner-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3);white-space:nowrap}
+.resultado-resumo{background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.15);border-radius:10px;padding:12px;margin-bottom:14px;text-align:center}
+.resultado-resumo-txt{font-size:15px;font-weight:800;color:#fff;margin-bottom:4px}
+.resultado-vencedor{font-size:12px;color:#4ade80;font-weight:700}
+.mx-info{font-size:11px;color:#64748b;font-style:italic;margin-bottom:8px}
+
+/* ─ Classificação ─ */
+.classif-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:9px;overflow:hidden;margin-bottom:10px}
+.classif-hd{display:grid;grid-template-columns:28px 1fr 36px 36px 36px;gap:4px;padding:6px 10px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06)}
+.classif-hd span{font-size:10px;font-weight:700;color:#475569;text-align:center}
+.classif-hd span:nth-child(2){text-align:left}
+.classif-row{display:grid;grid-template-columns:28px 1fr 36px 36px 36px;gap:4px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.04)}
+.classif-row:last-child{border-bottom:none}
+.classif-row span{font-size:12px;color:#94a3b8;text-align:center}
+.classif-row span:nth-child(2){text-align:left;font-weight:600;color:#e2eaf0}
+.classif-row.classif-1 span:first-child{color:#f59e0b;font-weight:800}
+.classif-row.classif-2 span:first-child{color:#94a3b8;font-weight:800}
+
+/* ─ Fase final / bracket ─ */
+.fase-final-sec{margin-top:28px;border-top:1px solid rgba(255,255,255,.06);padding-top:20px}
+.fase-final-title{font-size:14px;font-weight:800;color:#f59e0b;letter-spacing:.5px;margin-bottom:14px;text-align:center}
+.bracket-round{margin-bottom:16px}
+.bracket-round-title{font-size:11px;font-weight:700;color:#475569;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.bracket-match{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.bracket-eq{font-size:13px;font-weight:700;color:#e2eaf0;flex:1}
+.bracket-eq.winner{color:#4ade80}
+.bracket-eq.tbd{color:#334155;font-style:italic}
+.bracket-vs{font-size:11px;color:#334155;font-weight:900}
+.bracket-score{font-size:12px;color:#7db8d4;font-weight:700}
+
+/* ─ Tela capitão ─ */
+.cap-pg{min-height:100vh;background:linear-gradient(160deg,#060d18,#0e2040);display:flex;align-items:flex-start;justify-content:center;padding:28px 14px 48px}
+.cap-card{width:100%;max-width:440px;background:rgba(255,255,255,.05);border-radius:22px;padding:22px;border:1px solid rgba(255,255,255,.09)}
+.cap-hd{text-align:center;margin-bottom:22px}
+.cat-pill{display:inline-block;font-size:10px;font-weight:800;color:#f59e0b;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:20px;padding:3px 13px;margin-bottom:10px}
+.cap-title{font-size:26px;font-weight:800;color:#fff;margin-bottom:7px}
+.cap-vs{display:inline-block;font-size:13px;color:#7dd3fc;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.18);border-radius:20px;padding:3px 14px}
+.mod-sec{margin-bottom:14px;border-radius:13px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+.mod-sec-hd{display:flex;align-items:center;justify-content:space-between;padding:9px 13px}
+.mod-sec-hd.fd{background:rgba(244,114,182,.1);border-bottom:1px solid rgba(244,114,182,.15)}
+.mod-sec-hd.md{background:rgba(56,189,248,.1);border-bottom:1px solid rgba(56,189,248,.15)}
+.mod-sec-hd.mx{background:rgba(167,139,250,.1);border-bottom:1px solid rgba(167,139,250,.15)}
+.mod-lbl{font-size:12px;font-weight:800;letter-spacing:.4px}
+.mod-lbl.fd{color:#f472b6}.mod-lbl.md{color:#38bdf8}.mod-lbl.mx{color:#a78bfa}
+.mod-cnt{font-size:11px;font-weight:700}
+.mod-cnt.ok{color:#4ade80}.mod-cnt.partial{color:#fbbf24}.mod-cnt.empty{color:#475569}
+.prog-wrap{height:3px;background:rgba(255,255,255,.06);margin:0 13px 10px}
+.prog-bar{height:3px;transition:width .3s}
+.prog-fd{background:#db2777}.prog-md{background:#0ea5e9}.prog-mx{background:#7c3aed}
+.atleta-btns{padding:0 13px 10px;display:flex;flex-direction:column;gap:6px}
+.atleta-btn{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:11px 13px;color:#64748b;font-size:14px;font-weight:500;width:100%;text-align:left}
+.atleta-btn.sel-fd{background:rgba(244,114,182,.1);border-color:rgba(244,114,182,.3);color:#fff}
+.atleta-btn.sel-md{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.3);color:#fff}
+.atleta-btn.sel-mx{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:#fff}
+.atleta-btn.dim{opacity:.3;cursor:default}
+.chk{width:20px;height:20px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.chk-fd{border-color:#db2777;color:#f472b6}.chk-fd.on{background:#db2777;color:#fff;border-color:#db2777}
+.chk-md{border-color:#0ea5e9;color:#38bdf8}.chk-md.on{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+.chk-mx{border-color:#7c3aed;color:#a78bfa}.chk-mx.on{background:#7c3aed;color:#fff;border-color:#7c3aed}
+.cap-summary{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:11px 13px;margin-bottom:14px}
+.sum-row{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.sum-chip{font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px}
+.sum-nomes{font-size:12px;color:#94a3b8}
+.sum-nomes.ok{color:#e2eaf0}
+.btn-confirmar{width:100%;padding:14px;font-size:15px;font-weight:800;background:linear-gradient(135deg,#0ea5e9,#1d4ed8);color:#fff;border:none;border-radius:13px}
+.confirmado-box{text-align:center}
+.confirmado-icon{width:56px;height:56px;border-radius:50%;background:rgba(74,222,128,.15);border:2px solid #4ade80;display:flex;align-items:center;justify-content:center;font-size:26px;color:#4ade80;margin:0 auto 14px}
+.confirmado-title{font-size:21px;font-weight:800;color:#4ade80;margin-bottom:5px}
+.confirmado-sub{font-size:13px;color:#7db8d4;margin-bottom:13px}
+.confirmado-mod{background:rgba(255,255,255,.04);border-radius:9px;padding:10px 13px;margin-bottom:7px;text-align:left}
+.confirmado-mod-lbl{font-size:10px;font-weight:800;letter-spacing:.8px;margin-bottom:3px}
+.confirmado-atleta{font-size:13px;color:#e2eaf0;padding:1px 0}
+.btn-editar{width:100%;padding:11px;font-size:13px;font-weight:700;background:rgba(255,255,255,.04);color:#64748b;border:1px solid rgba(255,255,255,.08);border-radius:11px;margin-top:12px}
+
+/* ─ Cadastro ─ */
+.cad-pg{min-height:100vh;background:linear-gradient(160deg,#060d18,#0e2040);display:flex;align-items:flex-start;justify-content:center;padding:28px 14px 48px}
+.cad-card{width:100%;max-width:440px;background:rgba(255,255,255,.05);border-radius:22px;padding:22px;border:1px solid rgba(255,255,255,.09)}
+.cad-hd{text-align:center;margin-bottom:20px}
+.cad-title{font-size:24px;font-weight:800;color:#fff;margin-bottom:6px}
+.cad-sub{font-size:13px;color:#7db8d4}
+.cad-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.cad-item{display:flex;align-items:center;justify-content:space-between;background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.15);border-radius:9px;padding:9px 13px}
+.cad-num{font-size:11px;color:#3a5068;margin-right:7px;min-width:18px}
+.cad-nome{font-size:13px;color:#e2eaf0;font-weight:600}
+.cad-count{font-size:12px;color:#4ade80;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);border-radius:7px;padding:4px 12px;display:inline-block;margin-bottom:13px}
+.nome-row{display:flex;gap:7px;margin-bottom:7px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="full-center">
+    <div class="loader spin"></div>
+    <p>Conectando...</p>
+  </div>
+</div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getFirestore,doc,getDoc,setDoc,onSnapshot}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── CONFIG ──────────────────────────────────────────────────
+const FB={apiKey:"AIzaSyBEXZSHuVKbT2GNB9DEkzSIcSiEolzWA",authDomain:"bt-worldcup.firebaseapp.com",projectId:"bt-worldcup",storageBucket:"bt-worldcup.firebasestorage.app",messagingSenderId:"390887913467",appId:"1:390887913467:web:5c721e960ea8b83c0c46e9"};
+const fapp=initializeApp(FB);
+const db=getFirestore(fapp);
+
+const CATS=["A","B","C","D","E","35+","60+"];
+const MODS=["FD","MD","MX"];
+const MOD_LBL={FD:"Feminino Dupla",MD:"Masculino Dupla",MX:"Misto Dupla"};
+const slug=s=>s.toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_+]/g,"");
+
+// ── FIREBASE ─────────────────────────────────────────────────
+async function dbGet(path){
+  try{
+    const s=await getDoc(doc(db,...path.split("/")));
+    return s.exists()?s.data():null;
+  }catch(e){console.warn("dbGet",path,e.message);return null;}
+}
+async function dbSet(path,val){
+  try{await setDoc(doc(db,...path.split("/")),val,{merge:true});}
+  catch(e){console.warn("dbSet",path,e.message);}
+}
+function dbListen(path,cb){
+  return onSnapshot(doc(db,...path.split("/")),s=>cb(s.exists()?s.data():null),e=>console.warn("listen",path,e.message));
+}
+
+// ── ESTADO ───────────────────────────────────────────────────
+let dados={categorias:{},atletas:{}};
+let escalacoes={};
+let quadras={};
+let timers={};
+let resultados={};
+let tela="painel";
+let catFiltro="todas";
+let gruposCol={};
+let cfgCat=CATS[0],cfgAba="grupos",grupoEqAberto=null,eqAtletaAtiva="";
+let localDados=null;
+let unsubs=[];
+function clearUnsubs(){unsubs.forEach(u=>u());unsubs=[];}
+
+// ── GERA CONFRONTOS ──────────────────────────────────────────
+function gerarConfrontos(grupo,cat){
+  const eq=grupo.equipes||[],out=[];
+  for(let i=0;i<eq.length;i++)
+    for(let j=i+1;j<eq.length;j++)
+      out.push({id:`${slug(cat)}-${grupo.id}-${slug(eq[i])}-${slug(eq[j])}`,cat,gid:grupo.id,gnome:grupo.nome,eq1:eq[i],eq2:eq[j]});
+  return out;
+}
+function todosConf(d){
+  const all=[];
+  for(const cat of CATS)
+    for(const g of(d.categorias?.[cat]?.grupos||[]))
+      all.push(...gerarConfrontos(g,cat));
+  return all;
+}
+
+// ── URL HASH ─────────────────────────────────────────────────
+function parseHashEsc(allC){
+  try{
+    const h=location.hash.replace("#","");if(!h)return null;
+    const p=new URLSearchParams(h);
+    const cid=p.get("c"),eq=decodeURIComponent(p.get("e")||"");
+    if(!cid||!eq)return null;
+    const c=allC.find(x=>x.id===cid);
+    if(!c||(eq!==c.eq1&&eq!==c.eq2))return null;
+    return{c,eq};
+  }catch{return null;}
+}
+function parseHashCad(){
+  try{
+    const h=location.hash.replace("#","");if(!h)return null;
+    const p=new URLSearchParams(h);
+    const eq=decodeURIComponent(p.get("cadastro")||"");
+    const cat=decodeURIComponent(p.get("cat")||"");
+    if(!eq||!cat)return null;
+    return{eq,cat};
+  }catch{return null;}
+}
+function buildLink(cid,eq){return location.href.split("#")[0]+"#c="+cid+"&e="+encodeURIComponent(eq);}
+function buildCadLink(eq,cat){return location.href.split("#")[0]+"#cadastro="+encodeURIComponent(eq)+"&cat="+encodeURIComponent(cat);}
+
+// ── RESULTADO HELPERS ────────────────────────────────────────
+function getResult(cid){return resultados[cid]||{};}
+function normMod(e){
+  if(!e)return{s1:"",s2:"",winner:null};
+  if(typeof e==="string")return{s1:"",s2:"",winner:e};
+  return{s1:e.s1||"",s2:e.s2||"",winner:e.winner||null};
+}
+function calcResultStatus(c){
+  const r=getResult(c.id);
+  const fd=normMod(r.FD),md=normMod(r.MD),mx=normMod(r.MX);
+  let e1=0,e2=0,mods=[];
+  const apply=(m,entry)=>{if(!entry.winner)return false;mods.push(m);entry.winner===c.eq1?e1++:e2++;return true;};
+  const fdOk=apply("FD",fd),mdOk=apply("MD",md);
+  const obrig=fdOk&&mdOk;
+  const needMX=obrig&&e1===e2;
+  const mxOk=needMX?apply("MX",mx):false;
+  const done=obrig&&(!needMX||mxOk);
+  return{fd,md,mx,e1,e2,needMX,done,winner:done?(e1>e2?c.eq1:c.eq2):null,mods};
+}
+function isEscOk(cid){
+  const e=escalacoes[cid]||{};
+  return["eq1","eq2"].every(s=>MODS.every(m=>e[s]?.[m]?.atletas?.length===2));
+}
+function formatPar(atletas){
+  if(!atletas||!atletas.length)return null;
+  return atletas.map(a=>a.split(" ")[0]).join(" / ");
+}
+function fmtTimer(ms){
+  const t=Math.floor(ms/1000);
+  const h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=t%60;
+  return(h?String(h).padStart(2,"0")+":":"")+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+}
+
+// ── DOM HELPERS ──────────────────────────────────────────────
+function el(tag,cls,children=[],attrs={}){
+  const e=document.createElement(tag);
+  if(cls)e.className=cls;
+  for(const[k,v]of Object.entries(attrs)){
+    if(k==="style")e.style.cssText=v;
+    else if(k.startsWith("on"))e.addEventListener(k.slice(2).toLowerCase(),v);
+    else e.setAttribute(k,v);
+  }
+  for(const c of children)e.appendChild(typeof c==="string"?document.createTextNode(c):c);
+  return e;
+}
+const div=(cls,...ch)=>el("div",cls,ch);
+const span=(cls,...ch)=>el("span",cls,ch);
+const btn=(cls,txt,cb)=>{const b=el("button",cls,[txt]);b.addEventListener("click",cb);return b;};
+const inp=(cls,ph,val="",attrs={})=>{const i=el("input",cls,[],{placeholder:ph,...attrs});i.value=val;return i;};
+
+// ── CSV EXPORT ───────────────────────────────────────────────
+function csvCell(v){const s=String(v??"");return(s.includes(",")||s.includes('"')||s.includes("\n"))?`"${s.replace(/"/g,'""')}"`:s;}
+function csvRow(a){return a.map(csvCell).join(",");}
+async function exportCSV(){
+  const lines=[];
+  lines.push(csvRow(["BEACH TENNIS WORLD CUP - Escalações"]));
+  lines.push(csvRow(["Exportado em:",new Date().toLocaleString("pt-BR")]));
+  lines.push("");
+  lines.push(csvRow(["Categoria","Grupo","Equipe 1","FD Eq.1","MD Eq.1","MX Eq.1","Equipe 2","FD Eq.2","MD Eq.2","MX Eq.2","Resultado","Vencedor"]));
+  for(const cat of CATS){
+    for(const g of(dados.categorias?.[cat]?.grupos||[])){
+      for(const c of gerarConfrontos(g,cat)){
+        const e1=escalacoes[c.id]?.eq1||{},e2=escalacoes[c.id]?.eq2||{};
+        const fmt=(e,m)=>e[m]?.atletas?.join(" & ")||"—";
+        const rs=calcResultStatus(c);
+        lines.push(csvRow([`Cat.${cat}`,`Grupo ${g.nome}`,c.eq1,fmt(e1,"FD"),fmt(e1,"MD"),fmt(e1,"MX"),c.eq2,fmt(e2,"FD"),fmt(e2,"MD"),fmt(e2,"MX"),rs.done?`${rs.e1}x${rs.e2}`:"—",rs.winner||"—"]));
+      }
+    }
+  }
+  const blob=new Blob(["\uFEFF"+lines.join("\n")],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=`BT_WorldCup_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// MODAIS
+// ═══════════════════════════════════════════════════════════
+function openOverlay(content){
+  const ov=div("overlay");
+  ov.addEventListener("click",e=>{if(e.target===ov)ov.remove();});
+  ov.appendChild(content);
+  document.body.appendChild(ov);
+  return ov;
+}
+function closeOverlay(){document.querySelector(".overlay")?.remove();}
+
+// Modal Links
+function modalLinks(c){
+  const box=div("modal fade");
+  const mh=div("modal-hd");
+  const mi=div("");
+  mi.appendChild(el("div","modal-title",["🔗 Links dos Capitães"]));
+  mi.appendChild(el("div","modal-sub",[`Cat.${c.cat} · Grupo ${c.gnome} · ${c.eq1} vs ${c.eq2}`]));
+  mh.appendChild(mi);
+  mh.appendChild(btn("close-btn","✕",closeOverlay));
+  box.appendChild(mh);
+  [c.eq1,c.eq2].forEach(eq=>{
+    const link=buildLink(c.id,eq);
+    const row=div("link-row");
+    row.appendChild(el("div","",["🏳️ "+eq],{style:"font-size:14px;font-weight:700;color:#fff;margin-bottom:2px"}));
+    const ub=div("link-url-box");ub.appendChild(span("link-url",link));row.appendChild(ub);
+    const btns=div("link-btns");
+    const bc=btn("btn btn-copiar","📋 Copiar",()=>{navigator.clipboard?.writeText(link).catch(()=>{});bc.textContent="✓ Copiado!";setTimeout(()=>bc.textContent="📋 Copiar",2000);});
+    const op=eq===c.eq1?c.eq2:c.eq1;
+    const bw=btn("btn btn-whats","📲 WhatsApp",()=>{
+      const msg=encodeURIComponent(`🏖️ *Beach Tennis World Cup – Cat.${c.cat}*\nOlá, Capitão de *${eq}*!\nEscale FD, MD e MX contra *${op}* (Grupo ${c.gnome}):\n${link}`);
+      window.open("https://wa.me/?text="+msg,"_blank");
+    });
+    btns.appendChild(bc);btns.appendChild(bw);row.appendChild(btns);box.appendChild(row);
+  });
+  box.appendChild(el("p","modal-dica",["💡 O capitão abre o link e vê apenas os atletas do seu time."]));
+  openOverlay(box);
+}
+
+// Modal Alerta Resultado
+function modalAlerta(c){
+  const box=div("modal fade");
+  const mh=div("modal-hd");
+  const mi=div("");
+  mi.appendChild(el("div","modal-title",["⚠️ Cobrar Resultado"]));
+  mi.appendChild(el("div","modal-sub",[`${c.eq1} vs ${c.eq2} · Cat.${c.cat}`]));
+  mh.appendChild(mi);mh.appendChild(btn("close-btn","✕",closeOverlay));box.appendChild(mh);
+  const info=el("div","",["O resultado deste confronto ainda não foi inserido. Envie o alerta abaixo."],{style:"background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:9px;padding:10px 13px;font-size:13px;color:#fbbf24;margin-bottom:14px"});
+  box.appendChild(info);
+  [c.eq1,c.eq2].forEach(eq=>{
+    const link=buildLink(c.id,eq);
+    const op=eq===c.eq1?c.eq2:c.eq1;
+    const msgTxt=`🏖️ Beach Tennis World Cup – Cat.${c.cat}\nOlá, Capitão de ${eq}!\n\n⚠️ O resultado do confronto ${c.eq1} vs ${c.eq2} (Grupo ${c.gnome}) ainda não foi inserido.\n\nInsira o resultado:\n${link}`;
+    const row=div("link-row");
+    row.appendChild(el("div","",["🏳️ Capitão de "+eq],{style:"font-size:14px;font-weight:700;color:#fff"}));
+    const btns=div("link-btns");
+    const bc=btn("btn btn-copiar","📋 Copiar",()=>{navigator.clipboard?.writeText(msgTxt).catch(()=>{});bc.textContent="✓ Copiado!";setTimeout(()=>bc.textContent="📋 Copiar",2000);});
+    const bw=btn("btn btn-whats","📲 WhatsApp",()=>{window.open("https://wa.me/?text="+encodeURIComponent(msgTxt),"_blank");});
+    btns.appendChild(bc);btns.appendChild(bw);row.appendChild(btns);box.appendChild(row);
+  });
+  openOverlay(box);
+}
+
+// Modal Quadra + Timer
+function modalQuadraTimer(c){
+  const box=div("modal fade");
+  const mh=div("modal-hd");
+  const mi=div("");
+  mi.appendChild(el("div","modal-title",["🎾 Quadra & ⏱ Timer"]));
+  mi.appendChild(el("div","modal-sub",[`${c.eq1} vs ${c.eq2} · Cat.${c.cat}`]));
+  mh.appendChild(mi);mh.appendChild(btn("close-btn","✕",closeOverlay));box.appendChild(mh);
+
+  // Quadras
+  const qs=div("modal-section");
+  qs.appendChild(el("div","modal-section-title",["🎾 Atribuir Quadra"]));
+  const numQ=dados.numQuadras||8;
+  const grid=div("quadras-grid");
+  const qAtual=quadras[c.id]||null;
+  for(let i=1;i<=numQ;i++){
+    const ocupadaPor=Object.entries(quadras).find(([k,v])=>String(v)===String(i)&&k!==c.id);
+    const isSel=String(qAtual)===String(i);
+    const isOcup=!!ocupadaPor;
+    const qb=btn("btn q-btn "+(isSel?"selecionada":isOcup?"ocupada":"livre"),`Q${i}`+( isOcup&&!isSel?" 🔴":""),async()=>{
+      if(isOcup&&!isSel)return;
+      const nv={...quadras};
+      if(isSel)delete nv[c.id];else nv[c.id]=i;
+      quadras=nv;
+      await dbSet("quadras/estado",nv);
+      closeOverlay();atualizarCard(c.id);
+    });
+    grid.appendChild(qb);
+  }
+  qs.appendChild(grid);
+  if(qAtual){
+    const lb=btn("btn btn-ghost","✕ Liberar Quadra Q"+qAtual,async()=>{
+      const nv={...quadras};delete nv[c.id];quadras=nv;
+      await dbSet("quadras/estado",nv);closeOverlay();atualizarCard(c.id);
+    });
+    lb.style.cssText="width:100%;margin-top:6px";qs.appendChild(lb);
+  }
+  box.appendChild(qs);
+
+  // Timer
+  const ts=div("modal-section");
+  ts.appendChild(el("div","modal-section-title",["⏱ Cronômetro"]));
+  const t=timers[c.id]||{elapsed:0,running:false};
+  let elapsed=t.running?(Date.now()-(t.start||Date.now()))+(t.elapsed||0):(t.elapsed||0);
+  let running=t.running;
+  let interval=null;
+  const td=span("timer-display "+(running?"":"stopped"),fmtTimer(elapsed));
+  ts.appendChild(td);
+  if(running){interval=setInterval(()=>{elapsed=(Date.now()-(t.start||Date.now()))+(t.elapsed||0);td.textContent=fmtTimer(elapsed);},1000);}
+  const tbtns=div("timer-btns");
+  const bStart=btn("btn timer-btn start","▶ Iniciar",async()=>{
+    clearInterval(interval);running=true;const now=Date.now();
+    const nv={...timers,[c.id]:{start:now,elapsed:t.elapsed||0,running:true}};
+    timers=nv;await dbSet("timers/estado",nv);
+    td.className="timer-display";
+    interval=setInterval(()=>{elapsed=(Date.now()-now)+(t.elapsed||0);td.textContent=fmtTimer(elapsed);},1000);
+  });
+  const bPause=btn("btn timer-btn pause","⏸ Pausar",async()=>{
+    clearInterval(interval);running=false;
+    const nv={...timers,[c.id]:{start:0,elapsed:elapsed,running:false}};
+    timers=nv;await dbSet("timers/estado",nv);
+    td.className="timer-display stopped";
+  });
+  const bReset=btn("btn timer-btn reset","🔄 Reset",async()=>{
+    clearInterval(interval);elapsed=0;running=false;
+    const nv={...timers};delete nv[c.id];timers=nv;
+    await dbSet("timers/estado",nv);
+    td.className="timer-display stopped";td.textContent="00:00";
+  });
+  tbtns.appendChild(bStart);tbtns.appendChild(bPause);tbtns.appendChild(bReset);
+  ts.appendChild(tbtns);
+  box.appendChild(ts);
+  openOverlay(box);
+}
+
+// Modal Resultado
+function modalResultado(c){
+  const box=div("modal fade");
+  const mh=div("modal-hd");
+  const mi=div("");
+  mi.appendChild(el("div","modal-title",["🏆 Lançar Resultado"]));
+  mi.appendChild(el("div","modal-sub",[`Cat.${c.cat} · Grupo ${c.gnome} · ${c.eq1} vs ${c.eq2}`]));
+  mh.appendChild(mi);mh.appendChild(btn("close-btn","✕",closeOverlay));box.appendChild(mh);
+
+  const r=getResult(c.id);
+  const local={FD:normMod(r.FD),MD:normMod(r.MD),MX:normMod(r.MX)};
+
+  const bodyEl=div("");box.appendChild(bodyEl);
+
+  function renderModalBody(){
+    bodyEl.innerHTML="";
+    const status=calcResultStatus({...c,id:c.id});
+
+    // Resumo se completo
+    if(status.done){
+      const resumo=div("resultado-resumo");
+      resumo.appendChild(el("div","resultado-resumo-txt",[`${c.eq1}  ${status.e1} × ${status.e2}  ${c.eq2}`]));
+      if(status.winner) resumo.appendChild(el("div","resultado-vencedor",["🏆 Vencedor: "+status.winner]));
+      bodyEl.appendChild(resumo);
+    }
+
+    ["FD","MD","MX"].forEach(mod=>{
+      const entry=local[mod];
+      // MX só se necessário
+      if(mod==="MX"){
+        const fd=local.FD,md=local.MD;
+        let e1=0,e2=0;
+        if(fd.winner===c.eq1)e1++;else if(fd.winner===c.eq2)e2++;
+        if(md.winner===c.eq1)e1++;else if(md.winner===c.eq2)e2++;
+        const needMX=fd.winner&&md.winner&&e1===e2;
+        if(!needMX){
+          const info=el("div","mx-info",["MX: só jogado se FD e MD ficarem 1×1"]);
+          bodyEl.appendChild(info);
+          return;
+        }
+      }
+
+      const sec=div("result-mod-sec");
+      const mc=mod==="FD"?"#f472b6":mod==="MD"?"#38bdf8":"#a78bfa";
+      sec.appendChild(el("div","result-mod-title",[mod+" – "+MOD_LBL[mod]],{style:`color:${mc}`}));
+
+      // Score row eq1
+      const r1=div("score-row");
+      r1.appendChild(el("span","score-eq",[c.eq1]));
+      const s1=inp("score-inp","0",entry.s1);
+      s1.type="number";s1.min="0";s1.max="99";
+      s1.addEventListener("input",()=>{local[mod].s1=s1.value;calcWinner(mod,s1.value,s2.value);renderModalBody();});
+      r1.appendChild(s1);
+      sec.appendChild(r1);
+
+      // Sep
+      sec.appendChild(el("div","score-sep",["×"],{style:"text-align:center;margin:3px 0"}));
+
+      // Score row eq2
+      const r2=div("score-row");
+      r2.appendChild(el("span","score-eq",[c.eq2]));
+      var s2=inp("score-inp","0",entry.s2);
+      s2.type="number";s2.min="0";s2.max="99";
+      s2.addEventListener("input",()=>{local[mod].s2=s2.value;calcWinner(mod,s1.value,s2.value);renderModalBody();});
+      r2.appendChild(s2);
+      sec.appendChild(r2);
+
+      if(entry.winner){
+        const wb=el("div","",["🏆 "+entry.winner],{style:"font-size:12px;color:#4ade80;font-weight:700;margin-top:6px;text-align:center"});
+        sec.appendChild(wb);
+      }
+      bodyEl.appendChild(sec);
+    });
+
+    function calcWinner(mod,v1,v2){
+      const n1=parseInt(v1)||0,n2=parseInt(v2)||0;
+      if(n1>n2)local[mod].winner=c.eq1;
+      else if(n2>n1)local[mod].winner=c.eq2;
+      else local[mod].winner=null;
+    }
+
+    // Botão salvar
+    const bSave=btn("btn btn-primary","💾 Salvar Resultado",async()=>{
+      bSave.disabled=true;bSave.textContent="Salvando...";
+      const payload={};
+      ["FD","MD","MX"].forEach(m=>{
+        const e=local[m];
+        if(e.s1!=""||e.s2!="") payload[m]={s1:e.s1,s2:e.s2,winner:e.winner||null};
+      });
+      payload.ts=Date.now();
+      resultados[c.id]=payload;
+      await dbSet(`resultados/${c.id}`,payload);
+      atualizarCard(c.id);
+      closeOverlay();
+    });
+    bSave.style.cssText="width:100%;margin-top:8px;padding:13px;border-radius:12px";
+    bodyEl.appendChild(bSave);
+  }
+  renderModalBody();
+  openOverlay(box);
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAINEL
+// ═══════════════════════════════════════════════════════════
+function renderPainel(){
+  clearUnsubs();
+  const allC=todosConf(dados);
+
+  // Listeners tempo real
+  unsubs.push(dbListen("config/dados",d=>{if(d){dados=d;atualizarPainelConteudo();}}));
+  allC.forEach(c=>{
+    ["eq1","eq2"].forEach(side=>{
+      const eq=c[side];
+      unsubs.push(dbListen(`escalacoes/${c.id}-${slug(eq)}`,d=>{
+        if(!escalacoes[c.id])escalacoes[c.id]={};
+        escalacoes[c.id][side]=d;
+        atualizarCard(c.id);atualizarStats();
+      }));
+    });
+    unsubs.push(dbListen(`resultados/${c.id}`,d=>{
+      resultados[c.id]=d;atualizarCard(c.id);atualizarStats();
+    }));
+  });
+
+  const totalP=allC.filter(c=>isEscOk(c.id)).length;
+  const totalR=allC.filter(c=>calcResultStatus(c).done).length;
+
+  const page=div("pg fade");
+  // Header
+  const hd=div("painel-hd");
+  const titBlock=div("");
+  titBlock.appendChild(el("h1","painel-title",["🏖️ Beach Tennis World Cup"]));
+  titBlock.appendChild(el("p","painel-sub",["Painel do Organizador"]));
+  hd.appendChild(titBlock);
+  const acts=div("hd-actions");
+  const sb=div("stats-box");sb.id="stats-box";
+  sb.innerHTML=`<div class="stat-item"><span class="stat-num g" id="sp">${totalP}</span><span class="stat-label">Escalados</span></div><div class="stat-div"></div><div class="stat-item"><span class="stat-num" id="sr" style="color:#a78bfa">${totalR}</span><span class="stat-label">Resultados</span></div><div class="stat-div"></div><div class="stat-item"><span class="stat-num y" id="sd">${allC.length-totalP}</span><span class="stat-label">Pendentes</span></div>`;
+  acts.appendChild(sb);
+  acts.appendChild(btn("btn btn-config","⚙️ Config",()=>{clearUnsubs();tela="config";render();}));
+  if(allC.length>0){
+    let exporting=false;
+    const be=btn("btn btn-export","📥 CSV",async()=>{if(exporting)return;exporting=true;be.textContent="⏳";await exportCSV();exporting=false;be.textContent="📥 CSV";});
+    acts.appendChild(be);
+  }
+  hd.appendChild(acts);page.appendChild(hd);
+  const upd=div("update-info");upd.id="upd";
+  upd.innerHTML='<span class="live-dot"></span>Tempo real via Firebase';
+  page.appendChild(upd);
+
+  if(allC.length===0){
+    const es=div("empty-state");
+    es.innerHTML='<div class="empty-icon">🏆</div><h3 class="empty-title">Nenhum confronto ainda</h3><p class="empty-desc">Configure categorias, grupos e equipes para começar.</p>';
+    es.appendChild(btn("btn btn-primary btn-save-big","⚙️ Configurar Agora",()=>{clearUnsubs();tela="config";render();}));
+    page.appendChild(es);return page;
+  }
+
+  // Filtro
+  const catsAtivas=CATS.filter(cat=>(dados.categorias?.[cat]?.grupos||[]).some(g=>g.equipes.length>=2));
+  const filtro=div("filtro-cats");filtro.id="filtro";
+  const mkF=(lbl,val)=>btn("filtro-btn"+(catFiltro===val?" on":""),lbl,()=>{catFiltro=val;render();});
+  filtro.appendChild(mkF("Todas","todas"));
+  catsAtivas.forEach(c=>filtro.appendChild(mkF("Cat."+c,c)));
+  page.appendChild(filtro);
+
+  const wrap=div("");wrap.id="conf-wrap";
+  page.appendChild(wrap);
+  renderConfWrap(wrap);
+  return page;
+}
+
+function renderConfWrap(wrap){
+  wrap.innerHTML="";
+  const allC=todosConf(dados);
+  const filtrados=catFiltro==="todas"?allC:allC.filter(c=>c.cat===catFiltro);
+  const agrup={};
+  for(const c of filtrados){
+    if(!agrup[c.cat])agrup[c.cat]={};
+    if(!agrup[c.cat][c.gid])agrup[c.cat][c.gid]={nome:c.gnome,confs:[]};
+    agrup[c.cat][c.gid].confs.push(c);
+  }
+  for(const[cat,grupos] of Object.entries(agrup)){
+    const sec=div("cat-sec");
+    const sh=div("cat-sec-hd");
+    const allG=Object.values(grupos).flatMap(g=>g.confs);
+    const pG=allG.filter(c=>isEscOk(c.id)).length;
+    sh.appendChild(span("cat-tag","CATEGORIA "+cat));
+    sh.appendChild(span("cat-stats-txt",pG+"/"+allG.length+" prontos"));
+    sec.appendChild(sh);
+    for(const[gid,g] of Object.entries(grupos)){
+      const colKey=cat+"-"+gid;
+      const isCol=gruposCol[colKey]||false;
+      const gs=div("grupo-sec");
+      const gsh=div("grupo-sec-hd");
+      const pG2=g.confs.filter(c=>isEscOk(c.id)).length;
+      const gtitle=el("div","grupo-sec-title",["Grupo "+g.nome+" "]);
+      gtitle.appendChild(span("cat-stats-txt","("+pG2+"/"+g.confs.length+")"));
+      gsh.appendChild(gtitle);
+      const tog=span("grupo-toggle"+(isCol?" col":""),"▼");
+      gsh.appendChild(tog);
+      gsh.addEventListener("click",()=>{
+        gruposCol[colKey]=!gruposCol[colKey];
+        const body=gsh.nextElementSibling;
+        if(gruposCol[colKey]){
+          body.style.maxHeight=body.scrollHeight+"px";
+          setTimeout(()=>{body.style.maxHeight="0";},10);
+          tog.classList.add("col");
+        }else{
+          body.style.maxHeight="0";
+          setTimeout(()=>{body.style.maxHeight=body.scrollHeight+"px";
+            setTimeout(()=>{body.style.maxHeight="none";},320);},10);
+          tog.classList.remove("col");
+        }
+      });
+      gs.appendChild(gsh);
+      const gbody=div("grupo-body"+(isCol?" col":""));
+      gbody.style.maxHeight=isCol?"0":"none";
+      const grid=div("confrontos-grid");
+      g.confs.forEach(c=>grid.appendChild(renderCard(c)));
+      gbody.appendChild(grid);
+
+      // Classificação do grupo
+      const grupoReal=(dados.categorias?.[cat]?.grupos||[]).find(x=>String(x.id)===String(gid));
+      if(grupoReal){
+        const classif=calcClassif(cat,grupoReal);
+        if(classif.length){
+          const cb=div("classif-box");
+          cb.appendChild(el("div","classif-hd",[span("","Pos"),span("","Equipe"),span("","Pts"),span("","V"),span("","SG")]));
+          classif.forEach((t,i)=>{
+            const row=el("div","classif-row classif-"+(i+1),[span("",String(i+1)),span("",t.nome),span("",String(t.p)),span("",String(t.v)),span("",String(t.sg))]);
+            cb.appendChild(row);
+          });
+          gbody.appendChild(cb);
+        }
+      }
+      gs.appendChild(gbody);
+      sec.appendChild(gs);
+    }
+    wrap.appendChild(sec);
+  }
+}
+
+function calcClassif(cat,grupo){
+  const eqs=grupo.equipes||[];
+  const stats={};
+  eqs.forEach(e=>{stats[e]={nome:e,p:0,v:0,d:0,sg:0};});
+  const confs=gerarConfrontos(grupo,cat);
+  confs.forEach(c=>{
+    const rs=calcResultStatus(c);
+    if(!rs.done)return;
+    const w=rs.winner,l=w===c.eq1?c.eq2:c.eq1;
+    if(stats[w])stats[w].v++,stats[w].p+=2;
+    if(stats[l])stats[l].d++;
+  });
+  return Object.values(stats).sort((a,b)=>b.p-a.p||b.v-a.v||b.sg-a.sg);
+}
+
+function renderCard(c){
+  const escOk=isEscOk(c.id);
+  const rs=calcResultStatus(c);
+  const escParc=!escOk&&(escalacoes[c.id]?.eq1||escalacoes[c.id]?.eq2);
+  const card=div("c-card"+(escOk?" ok":"")+(rs.done?" has-result":""));
+  card.id="card-"+c.id;
+
+  // Header
+  const hd=div("c-card-hd");
+  const times=div("c-times");
+  times.innerHTML=c.eq1+'<span class="vs">×</span>'+c.eq2;
+  hd.appendChild(times);
+  const hdr=div("c-hd-right");
+  if(quadras[c.id])hdr.appendChild(span("quadra-badge","🎾 Q"+quadras[c.id]));
+  if(timers[c.id]?.running){
+    const elapsed=(Date.now()-(timers[c.id].start||Date.now()))+(timers[c.id].elapsed||0);
+    hdr.appendChild(span("timer-badge","⏱ "+fmtTimer(elapsed)));
+  }
+  if(rs.done)hdr.appendChild(span("badge result","✓ "+rs.e1+"×"+rs.e2));
+  else hdr.appendChild(span("badge "+(escOk?"ok":escParc?"partial":"pending"),escOk?"✓ Escalado":escParc?"⏳ Parcial":"⏸ Aguardando"));
+  hd.appendChild(hdr);card.appendChild(hd);
+
+  // Partidas (FD/MD/MX)
+  const body=div("c-body");
+  MODS.forEach(mod=>{
+    const e=escalacoes[c.id]||{};
+    const a1=e.eq1?.[mod]?.atletas||[];
+    const a2=e.eq2?.[mod]?.atletas||[];
+    const row=div("partida-row");
+    row.appendChild(span("mod-chip "+mod.toLowerCase(),mod));
+    const pares=div("pares-row");
+    const p1=formatPar(a1),p2=formatPar(a2);
+    if(p1||p2){
+      pares.appendChild(span("par-nome",p1||"—"));
+      pares.appendChild(span("par-vs","×"));
+      pares.appendChild(span("par-nome",p2||"—"));
+    }else{
+      if(rs.done){
+        const rmod=normMod(getResult(c.id)[mod]);
+        if(rmod.winner) pares.appendChild(span("par-nome",rmod.winner+" ganhou"));
+        else pares.appendChild(span("par-vazio","—"));
+      }else pares.appendChild(span("par-vazio","Aguardando escalação"));
+    }
+    row.appendChild(pares);body.appendChild(row);
+  });
+  card.appendChild(body);
+
+  // Footer
+  const footer=div("c-footer");
+  footer.appendChild(btn("btn btn-links","🔗 Links",()=>modalLinks(c)));
+  footer.appendChild(btn("btn btn-result","🏆 Resultado",()=>modalResultado(c)));
+  footer.appendChild(btn("btn btn-config","🎾/⏱",()=>modalQuadraTimer(c)));
+  if(escOk&&!rs.done)footer.appendChild(btn("btn btn-alerta","⚠️ Cobrar",()=>modalAlerta(c)));
+  card.appendChild(footer);
+  return card;
+}
+
+function atualizarCard(cid){
+  const old=document.getElementById("card-"+cid);if(!old)return;
+  const allC=todosConf(dados);
+  const c=allC.find(x=>x.id===cid);if(!c)return;
+  old.replaceWith(renderCard(c));
+}
+function atualizarStats(){
+  const allC=todosConf(dados);
+  const p=allC.filter(c=>isEscOk(c.id)).length;
+  const r=allC.filter(c=>calcResultStatus(c).done).length;
+  const sp=document.getElementById("sp"),sr=document.getElementById("sr"),sd=document.getElementById("sd");
+  if(sp)sp.textContent=p;if(sr)sr.textContent=r;if(sd)sd.textContent=allC.length-p;
+}
+function atualizarPainelConteudo(){
+  const w=document.getElementById("conf-wrap");
+  if(w)renderConfWrap(w);
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+function renderConfig(){
+  localDados=JSON.parse(JSON.stringify(dados));
+  const page=div("pg fade");
+  const inner=div("inner");
+  const ch=div("cfg-hd");
+  ch.appendChild(btn("back-btn btn","← Painel",()=>{tela="painel";render();}));
+  ch.appendChild(el("h2","cfg-title",["⚙️ Configurações"]));
+  inner.appendChild(ch);
+
+  // Num quadras
+  const qrow=div("num-quadras-row");
+  qrow.appendChild(el("span","",["Número de quadras:"],{style:"font-size:14px;color:#94a3b8;font-weight:600"}));
+  const qinp=inp("num-quadras-inp","8",String(localDados.numQuadras||8),{type:"number",min:"1",max:"50"});
+  qinp.addEventListener("input",()=>{localDados.numQuadras=parseInt(qinp.value)||8;});
+  qrow.appendChild(qinp);
+  inner.appendChild(qrow);
+
+  // Cat buttons
+  inner.appendChild(el("p","sec-label",["Categoria"]));
+  const catBtns=div("cat-btns");
+  CATS.forEach(c=>{
+    const b=btn("cat-btn"+(cfgCat===c?" on":""),"Cat."+c,()=>{cfgCat=c;grupoEqAberto=null;eqAtletaAtiva="";refreshCfg(inner);});
+    catBtns.appendChild(b);
+  });
+  inner.appendChild(catBtns);
+
+  // Tabs
+  const tabs=div("tabs");
+  ["grupos","atletas"].forEach(t=>{
+    const b=btn("tab"+(cfgAba===t?" on":""),t==="grupos"?"🏆 Grupos":"👤 Atletas",()=>{cfgAba=t;refreshCfg(inner);});
+    tabs.appendChild(b);
+  });
+  inner.appendChild(tabs);
+
+  const cont=div("");cont.id="cfg-cont";inner.appendChild(cont);
+  renderCfgCont(cont);
+
+  const bSave=btn("btn btn-primary btn-save-big","💾 Salvar e Voltar",async()=>{
+    bSave.textContent="💾 Salvando...";bSave.disabled=true;
+    await dbSet("config/dados",localDados);
+    dados=JSON.parse(JSON.stringify(localDados));
+    tela="painel";render();
+  });
+  inner.appendChild(bSave);
+  page.appendChild(inner);return page;
+}
+
+function refreshCfg(inner){
+  inner.querySelectorAll(".cat-btn").forEach((b,i)=>{b.className="cat-btn"+(CATS[i]===cfgCat?" on":"");});
+  inner.querySelectorAll(".tab").forEach((b,i)=>{b.className="tab"+(["grupos","atletas"][i]===cfgAba?" on":"");});
+  const c=inner.querySelector("#cfg-cont");if(c){c.innerHTML="";renderCfgCont(c);}
+}
+
+function renderCfgCont(cont){
+  cfgAba==="grupos"?renderCfgGrupos(cont):renderCfgAtletas(cont);
+}
+
+
+// ── PDF LETZPLAY ─────────────────────────────────────────────
+function carregarPdfJs(){
+  return new Promise((resolve,reject)=>{
+    if(window.pdfjsLib){
+      try{window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}catch{}
+      resolve(window.pdfjsLib);
+      return;
+    }
+    const existente=document.querySelector('script[data-pdfjs-dynamic="1"]');
+    if(existente){
+      existente.addEventListener('load',()=>resolve(window.pdfjsLib));
+      existente.addEventListener('error',()=>reject(new Error('Não foi possível carregar o leitor de PDF.')));
+      return;
+    }
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.async=true;
+    s.dataset.pdfjsDynamic='1';
+    s.onload=()=>{
+      if(window.pdfjsLib){
+        try{window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}catch{}
+        resolve(window.pdfjsLib);
+      }else reject(new Error('Leitor de PDF não disponível no navegador.'));
+    };
+    s.onerror=()=>reject(new Error('Falha ao carregar biblioteca de PDF.'));
+    document.head.appendChild(s);
+  });
+}
+
+async function extrairTextoPdf(file){
+  const pdfjs=await carregarPdfJs();
+  const bytes=new Uint8Array(await file.arrayBuffer());
+  const task=pdfjs.getDocument({data:bytes, useWorker:false});
+  const pdf=await task.promise;
+  let partes=[];
+  for(let p=1;p<=pdf.numPages;p++){
+    const page=await pdf.getPage(p);
+    const content=await page.getTextContent();
+    const txt=content.items.map(i=>i.str).join(' ');
+    partes.push(txt);
+  }
+  return partes.join('
+');
+}
+
+function parseLetzplayDrawText(texto){
+  const txt=String(texto||"").replace(/\n/g,"");
+  const catMatch=txt.match(/Categoria\s*-\s*([A-Z0-9+]+)/i);
+  const categoria=(catMatch?.[1]||cfgCat||"").trim();
+  const grupos=[];
+  const reg=/GRUPO\s+(\d+)([\s\S]*?)(?=GRUPO\s+\d+|#\s*ST\s*RK\s*QF\s*SF\s*FINAL\s*CAMPEÃO|$)/gi;
+  let m;
+  while((m=reg.exec(txt))){
+    const nomeGrupo=String(m[1]).trim();
+    const bloco=m[2]||"";
+    const antesJogos=bloco.split(/JOGOS/i)[0]||"";
+    const limpo=normalizarLinhaEquipe(
+      antesJogos
+        .replace(/#\s*SIT\.?\s*RANK\.?\s*EQUIPE\s*JOGOS\s*VITORIAS\s*DERROTAS\s*SETS\s*GAMES\s*CLASSIF\.?/gi,"")
+        .replace(/#\s*SIT\.?\s*RANK\.?\s*EQUIPE/gi,"")
+    );
+    const equipes=[];
+    const itemReg=/(?:^|\s)(\d+)\s+([A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇÜ0-9][A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇÜ0-9 .'-]*?)(?=\s+\d+\s*\/\s*\d+|\s+\d+\s+[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇÜ]|$)/g;
+    let mm;
+    while((mm=itemReg.exec(limpo))){
+      const bruto=mm[2]||"";
+      const nome=normalizarLinhaEquipe(bruto.replace(/[.,;:]+$/g,"") );
+      if(!nome)continue;
+      const up=nome.toUpperCase();
+      if(["SIT","RANK","EQUIPE","JOGOS","VITORIAS","DERROTAS","SETS","GAMES","CLASSIF"].includes(up))continue;
+      if(!equipes.includes(nome))equipes.push(nome);
+    }
+    if(!equipes.length) throw new Error(`Não foi possível identificar as equipes do Grupo ${nomeGrupo}.`);
+    grupos.push({nome:nomeGrupo,equipes});
+  }
+  if(!grupos.length) throw new Error("Não foi possível identificar grupos no PDF.");
+  return {categoria,grupos};
+}
+
+function aplicarImportacaoGrupos(parsed,{sobrescrever=true}={}){
+  const cat=parsed.categoria||cfgCat;
+  if(!localDados.categorias)localDados.categorias={};
+  if(!localDados.categorias[cat]||sobrescrever)localDados.categorias[cat]={grupos:[]};
+  const existentes=localDados.categorias[cat].grupos||[];
+  const novos=parsed.grupos.map((g,idx)=>({id:`gimp_${Date.now()}_${idx}`,nome:g.nome,equipes:[...g.equipes]}));
+  localDados.categorias[cat].grupos=sobrescrever?novos:[...existentes,...novos];
+  cfgCat=cat;
+  grupoEqAberto=null;
+  eqAtletaAtiva="";
+}
+
+function renderCfgGrupos(cont){
+  const grupos=(localDados.categorias?.[cfgCat]?.grupos||[]);
+  cont.appendChild(el("p","sec-label",["Grupos — Categoria "+cfgCat]));
+
+  // ── Importar PDF LetzPlay
+  const importCard=div("grupo-card");
+  importCard.style.marginBottom="18px";
+  importCard.appendChild(el("p","sec-label",["📥 Importar PDF LetzPlay"],{style:"margin-bottom:8px"}));
+  importCard.appendChild(el("p","",["Importa automaticamente categoria, grupos e países a partir do PDF de chaves do LetzPlay. Não importa atletas."],{style:"font-size:12px;color:#7db8d4;margin-bottom:12px"}));
+  const importRow=div("add-row");
+  const fileInp=el("input","inp",[],{type:"file",accept:"application/pdf",style:"flex:1;padding:9px"});
+  const importBtn=btn("btn btn-primary","📥 Importar PDF",async()=>{
+    const file=fileInp.files?.[0];
+    if(!file){alert("Selecione um PDF primeiro.");return;}
+    importBtn.disabled=true;importBtn.textContent="Lendo PDF...";
+    try{
+      const texto=await extrairTextoPdf(file);
+      const parsed=parseLetzplayDrawText(texto);
+      aplicarImportacaoGrupos(parsed,{sobrescrever:true});
+      const c2=document.getElementById("cfg-cont");
+      if(c2){c2.innerHTML="";renderCfgCont(c2);}
+      setTimeout(()=>alert(`✅ Importado! Categoria ${parsed.categoria} com ${parsed.grupos.length} grupo(s). Clique em Salvar e Voltar.`),80);
+    }catch(err){
+      alert("Falha ao ler o PDF: "+(err?.message||"Verifique se é o arquivo de chaves do LetzPlay."));
+    }finally{
+      importBtn.disabled=false;importBtn.textContent="📥 Importar PDF";fileInp.value="";
+    }
+  });
+  importRow.appendChild(fileInp);importRow.appendChild(importBtn);
+  importCard.appendChild(importRow);
+  cont.appendChild(importCard);
+
+  if(!grupos.length)cont.appendChild(el("p","empty-msg",["Nenhum grupo criado."]));
+
+  grupos.forEach(g=>{
+    const card=div("grupo-card");
+    const gh=div("grupo-card-hd");
+    const gt=div("");
+    gt.appendChild(span("grupo-nome-badge","Grupo "+g.nome));
+    gt.appendChild(el("span","",["  "+g.equipes.length+" equipe(s)"],{style:"font-size:11px;color:#475569"}));
+    gh.appendChild(gt);
+    // Excluir grupo
+    gh.appendChild(btn("btn btn-danger","🗑",()=>{
+      if(!confirm(`Excluir o grupo "${g.nome}"? Países órfãos também serão removidos.`))return;
+      const grupos2=localDados.categorias[cfgCat].grupos||[];
+      const alvo=grupos2.find(x=>x.id===g.id);
+      const eqsAlvo=[...(alvo?.equipes||[])];
+      localDados.categorias[cfgCat].grupos=grupos2.filter(x=>x.id!==g.id);
+      const restantes=new Set((localDados.categorias[cfgCat].grupos||[]).flatMap(x=>x.equipes||[]));
+      const manuais=new Set(localDados.equipesManuais?.[cfgCat]||[]);
+      if(!localDados.atletas)localDados.atletas={};
+      eqsAlvo.forEach(eq=>{
+        if(!restantes.has(eq)&&!manuais.has(eq)) delete localDados.atletas[`${cfgCat}__${eq}`];
+      });
+      if(grupoEqAberto===g.id)grupoEqAberto=null;
+      const c=document.getElementById("cfg-cont");
+      if(c){c.innerHTML="";renderCfgCont(c);}
+    }));
+    card.appendChild(gh);
+
+    // Equipes
+    const el2=div("eq-list");
+    g.equipes.forEach(eq=>{
+      const ei=div("eq-item");
+      ei.appendChild(span("eq-nome","🏳️ "+eq));
+      ei.appendChild(btn("btn btn-remove","✕",()=>{
+        g.equipes=g.equipes.filter(e=>e!==eq);
+        const c=document.getElementById("cfg-cont");if(c){c.innerHTML="";renderCfgCont(c);}
+      }));
+      el2.appendChild(ei);
+    });
+    card.appendChild(el2);
+
+    // Add equipe
+    if(grupoEqAberto===g.id){
+      const ar=div("add-row");
+      const i2=inp("inp","Nome da equipe (ex: Brasil)","",{style:"flex:1"});
+      const badd=btn("btn btn-primary","+ Add",()=>{
+        const v=i2.value.trim();if(!v)return;
+        if(!g.equipes.includes(v))g.equipes.push(v);
+        i2.value="";
+        const c=document.getElementById("cfg-cont");if(c){c.innerHTML="";renderCfgCont(c);}
+      });
+      i2.addEventListener("keydown",e=>{
+        if(e.key==="Enter")badd.click();
+        if(e.key==="Escape"){grupoEqAberto=null;const c=document.getElementById("cfg-cont");if(c){c.innerHTML="";renderCfgCont(c);}}
+      });
+      ar.appendChild(i2);ar.appendChild(badd);
+      ar.appendChild(btn("btn btn-ghost","✕",()=>{grupoEqAberto=null;const c=document.getElementById("cfg-cont");if(c){c.innerHTML="";renderCfgCont(c);}}));
+      card.appendChild(ar);setTimeout(()=>i2.focus(),50);
+    }else{
+      card.appendChild(btn("btn btn-add-eq","+ Adicionar equipe",()=>{grupoEqAberto=g.id;const c=document.getElementById("cfg-cont");if(c){c.innerHTML="";renderCfgCont(c);}}));
+    }
+
+    // Preview confrontos
+    const cfs=gerarConfrontos(g,cfgCat);
+    if(cfs.length){
+      const pv=div("preview-box");
+      pv.appendChild(span("preview-txt",`⚡ ${cfs.length} confronto(s): ${cfs.map(c=>c.eq1+" × "+c.eq2).join(" · ")}`));
+      card.appendChild(pv);
+    }
+    cont.appendChild(card);
+  });
+
+  // Add grupo
+  cont.appendChild(el("p","sec-label",["Novo Grupo"],{style:"margin-top:18px"}));
+  const af=div("add-form");
+  const ginp=inp("inp","Nome do grupo (ex: A, Vermelho, 1...)");
+  const gadd=btn("btn btn-primary","+ Criar Grupo",()=>{
+    const v=ginp.value.trim();if(!v)return;
+    if(!localDados.categorias[cfgCat])localDados.categorias[cfgCat]={grupos:[]};
+    localDados.categorias[cfgCat].grupos.push({id:"g"+Date.now(),nome:v,equipes:[]});
+    ginp.value="";const c=document.getElementById("cfg-cont");if(c){c.innerHTML="";renderCfgCont(c);}
+  });
+  ginp.addEventListener("keydown",e=>{if(e.key==="Enter")gadd.click();});
+  af.appendChild(ginp);af.appendChild(gadd);cont.appendChild(af);
+}
+
+function renderCfgAtletas(cont){
+  const grupos=localDados.categorias?.[cfgCat]?.grupos||[];
+  const eqsGrupo=[...new Set(grupos.flatMap(g=>g.equipes))].sort();
+  const eqsManuais=localDados.equipesManuais?.[cfgCat]||[];
+  const equipes=[...new Set([...eqsGrupo,...eqsManuais])].sort();
+
+  // Add equipe manual
+  const addEqRow=div("add-row");addEqRow.style.marginBottom="16px";
+  const addEqInp=inp("inp","Adicionar equipe (ex: Brasil)","",{style:"flex:1"});
+  const addEqBtn=btn("btn btn-primary","+ Equipe",()=>{
+    const v=addEqInp.value.trim();if(!v)return;
+    if(!localDados.equipesManuais)localDados.equipesManuais={};
+    if(!localDados.equipesManuais[cfgCat])localDados.equipesManuais[cfgCat]=[];
+    if(!localDados.equipesManuais[cfgCat].includes(v))localDados.equipesManuais[cfgCat].push(v);
+    addEqInp.value="";
+    const c=document.getElementById("cfg-cont");if(c){c.innerHTML="";renderCfgCont(c);}
+  });
+  addEqInp.addEventListener("keydown",e=>{if(e.key==="Enter")addEqBtn.click();});
+  addEqRow.appendChild(addEqInp);addEqRow.appendChild(addEqBtn);cont.appendChild(addEqRow);
+
+  if(!equipes.length){cont.appendChild(el("p","empty-msg",["Adicione uma equipe acima ou crie grupos primeiro."]));return;}
+
+  cont.appendChild(el("p","sec-label",["Links de cadastro de atletas"]));
+  const linksSec=div("");linksSec.style.marginBottom="20px";
+  equipes.forEach(eq=>{
+    const row=div("");row.style.cssText="display:flex;align-items:center;gap:8px;margin-bottom:8px;background:rgba(255,255,255,.04);border-radius:9px;padding:9px 12px;";
+    row.appendChild(el("span","eq-nome",["🏳️ "+eq]));
+    const bc=btn("btn btn-copiar","🔗 Link",()=>{
+      navigator.clipboard?.writeText(buildCadLink(eq,cfgCat)).catch(()=>{});
+      bc.textContent="✓ Copiado!";setTimeout(()=>bc.textContent="🔗 Link",2000);
+    });
+    bc.style.cssText="padding:6px 12px;font-size:12px;margin-left:auto;flex-shrink:0";
+    const bw=btn("btn btn-whats","📲",()=>{
+      const link=buildCadLink(eq,cfgCat);
+      const msg=encodeURIComponent(`🏖️ *Beach Tennis World Cup – Cat.${cfgCat}*\nOlá, Capitão de *${eq}*!\nCadastre os atletas da sua equipe:\n${link}`);
+      window.open("https://wa.me/?text="+msg,"_blank");
+    });
+    bw.style.cssText="padding:6px 10px;font-size:12px;flex-shrink:0";
+    row.appendChild(bc);row.appendChild(bw);
+    linksSec.appendChild(row);
+  });
+  cont.appendChild(linksSec);
+
+  cont.appendChild(el("p","sec-label",["Selecione a equipe para gerenciar atletas"]));
+  const tbs=div("times-btns");
+  equipes.forEach(eq=>{
+    const count=(localDados.atletas?.[`${cfgCat}__${eq}`]||[]).length;
+    const b=btn("time-btn"+(eqAtletaAtiva===eq?" on":""),eq,()=>{eqAtletaAtiva=eq;const c=document.getElementById("cfg-cont");if(c){c.innerHTML="";renderCfgCont(c);}});
+    b.appendChild(span("time-count",String(count)));tbs.appendChild(b);
+  });
+  cont.appendChild(tbs);
+
+  if(!eqAtletaAtiva)return;
+  const key=`${cfgCat}__${eqAtletaAtiva}`;
+  const lista=localDados.atletas?.[key]||[];
+  cont.appendChild(el("p","sec-label",[`Atletas de ${eqAtletaAtiva} — Cat.${cfgCat}`]));
+  const al=div("atleta-cfg-list");
+  if(!lista.length)al.appendChild(el("p","empty-msg",["Nenhum atleta cadastrado."]));
+  lista.forEach(nome=>{
+    const ai=div("atleta-cfg-item");
+    ai.appendChild(span("atleta-cfg-nome",nome));
+    ai.appendChild(btn("btn btn-remove","✕",()=>{
+      localDados.atletas[key]=localDados.atletas[key].filter(n=>n!==nome);
+      const c=document.getElementById("cfg-cont");if(c){c.innerHTML="";renderCfgCont(c);}
+    }));
+    al.appendChild(ai);
+  });
+  cont.appendChild(al);
+  const ar=div("add-row");
+  const ainp=inp("inp","Nome do atleta","",{style:"flex:1"});
+  const ab=btn("btn btn-primary","+ Add",()=>{
+    const v=ainp.value.trim();if(!v)return;
+    if(!localDados.atletas)localDados.atletas={};
+    if(!localDados.atletas[key])localDados.atletas[key]=[];
+    if(!localDados.atletas[key].includes(v))localDados.atletas[key].push(v);
+    ainp.value="";
+    const c=document.getElementById("cfg-cont");if(c){c.innerHTML="";renderCfgCont(c);}
+  });
+  ainp.addEventListener("keydown",e=>{if(e.key==="Enter")ab.click();});
+  ar.appendChild(ainp);ar.appendChild(ab);cont.appendChild(ar);
+}
+
+// ═══════════════════════════════════════════════════════════
+// TELA CAPITÃO
+// ═══════════════════════════════════════════════════════════
+function renderCapitao(c,equipe){
+  const atletasKey=`${c.cat}__${equipe}`;
+  let atletasList=dados.atletas?.[atletasKey]||[];
+  let sel={FD:new Set(),MD:new Set(),MX:new Set()};
+  let salvo=false,loading=true;
+  const op=equipe===c.eq1?c.eq2:c.eq1;
+  const escPath=`escalacoes/${c.id}-${slug(equipe)}`;
+  const cadPath=`config/atletas_${slug(c.cat)}_${slug(equipe)}`;
+
+  const page=div("cap-pg fade");
+  const card=div("cap-card");
+  const ch=div("cap-hd");
+  ch.appendChild(span("cat-pill",`Categoria ${c.cat} · Grupo ${c.gnome}`));
+  ch.appendChild(el("h2","cap-title",[equipe]));
+  ch.appendChild(span("cap-vs","vs "+op));
+  card.appendChild(ch);
+  const body=div("");card.appendChild(body);page.appendChild(card);
+
+  // Carrega atletas + escalação
+  Promise.all([
+    dbGet(escPath),
+    atletasList.length===0?dbGet(cadPath):Promise.resolve(null)
+  ]).then(([escData,cadData])=>{
+    if(escData) MODS.forEach(m=>{if(escData[m]?.atletas)sel[m]=new Set(escData[m].atletas);});
+    if(atletasList.length===0&&cadData?.atletas?.length) atletasList=cadData.atletas;
+    if(atletasList.length===0) atletasList=dados.atletas?.[atletasKey]||[];
+    loading=false;rb();
+  });
+
+  function modOk(m){return sel[m].size===2;}
+  function tudo(){return MODS.every(m=>modOk(m));}
+
+  function rb(){
+    body.innerHTML="";
+    if(loading){body.appendChild(div("full-center",...[div("loader spin")]));return;}
+
+    if(salvo){
+      const cb=div("confirmado-box");
+      cb.appendChild(div("confirmado-icon","✓"));
+      cb.appendChild(el("h3","confirmado-title",["Escalação Confirmada!"]));
+      cb.appendChild(el("p","confirmado-sub",["Atletas registrados:"]));
+      MODS.forEach(mod=>{
+        const ms=div("confirmado-mod");
+        const lc=mod==="FD"?"#f472b6":mod==="MD"?"#38bdf8":"#a78bfa";
+        ms.appendChild(el("div","confirmado-mod-lbl",[MOD_LBL[mod]],{style:"color:"+lc}));
+        [...sel[mod]].forEach(a=>ms.appendChild(el("div","confirmado-atleta",[a])));
+        cb.appendChild(ms);
+      });
+      cb.appendChild(btn("btn btn-editar","✏️ Editar",()=>{salvo=false;rb();}));
+      body.appendChild(cb);return;
+    }
+
+    if(!atletasList.length){
+      body.appendChild(el("p","empty-msg",["Nenhum atleta cadastrado para este time.\nContacte o organizador."]));
+      return;
+    }
+
+    // Resumo
+    const summ=div("cap-summary");
+    summ.appendChild(el("div","sec-label",["Resumo da escalação"]));
+    MODS.forEach(mod=>{
+      const row=div("sum-row");
+      const lc=mod==="FD"?"#f472b6":mod==="MD"?"#38bdf8":"#a78bfa";
+      const chip=span("sum-chip",mod);chip.style.cssText=`background:${lc}20;color:${lc};border:1px solid ${lc}40`;
+      row.appendChild(chip);
+      const nomes=[...sel[mod]];
+      row.appendChild(span("sum-nomes"+(nomes.length===2?" ok":""),nomes.length===2?nomes.join(" & "):`${nomes.length}/2 selecionado(s)`));
+      summ.appendChild(row);
+    });
+    body.appendChild(summ);
+
+    // Seções por modalidade
+    MODS.forEach(mod=>{
+      const mk=mod.toLowerCase();
+      const ms=div("mod-sec");
+      const mh=div("mod-sec-hd "+mk);
+      const linfo=div("");
+      linfo.appendChild(span("mod-lbl "+mk,mod+" – "+MOD_LBL[mod]));
+      mh.appendChild(linfo);
+      const cnt=sel[mod].size;
+      const cc=cnt===2?"mod-cnt ok":cnt>0?"mod-cnt partial":"mod-cnt empty";
+      mh.appendChild(span(cc,`${cnt}/2`));
+      ms.appendChild(mh);
+      const pw=div("prog-wrap");const pb=div("prog-bar prog-"+mk);pb.style.width=(cnt/2*100)+"%";pw.appendChild(pb);ms.appendChild(pw);
+      const btnsEl=div("atleta-btns");
+      atletasList.forEach(nome=>{
+        const isSel=sel[mod].has(nome);
+        const isBlk=!isSel&&cnt>=2;
+        const bCls="atleta-btn"+(isSel?" sel-"+mk:"")+(isBlk?" dim":"");
+        const b=el("button",bCls,[]);
+        const chk=span("chk chk-"+mk+(isSel?" on":""),isSel?"✓":"");
+        b.appendChild(chk);b.appendChild(document.createTextNode(" "+nome));
+        if(!isBlk){b.addEventListener("click",()=>{
+          if(sel[mod].has(nome))sel[mod].delete(nome);else if(sel[mod].size<2)sel[mod].add(nome);
+          rb();
+        });}
+        btnsEl.appendChild(b);
+      });
+      ms.appendChild(btnsEl);body.appendChild(ms);
+    });
+
+    const bc=btn("btn btn-confirmar",tudo()?"✔ Confirmar Escalação":"Selecione 2 atletas por modalidade",async()=>{
+      if(!tudo())return;
+      bc.disabled=true;bc.textContent="Salvando...";
+      const payload={ts:Date.now()};
+      MODS.forEach(m=>{payload[m]={atletas:[...sel[m]]};});
+      await dbSet(escPath,payload);
+      salvo=true;rb();
+    });
+    if(!tudo()){bc.disabled=true;bc.style.opacity=".4";}
+    body.appendChild(bc);
+  }
+  rb();return page;
+}
+
+// ═══════════════════════════════════════════════════════════
+// TELA CADASTRO
+// ═══════════════════════════════════════════════════════════
+function renderCadastro(equipe,cat){
+  const cadPath=`config/atletas_${slug(cat)}_${slug(equipe)}`;
+  let lista=[];let loading=true;
+
+  const page=div("cad-pg fade");
+  const card=div("cad-card");
+  const ch=div("cad-hd");
+  ch.appendChild(span("cat-pill","Categoria "+cat));
+  ch.appendChild(el("h2","cad-title",["🏳️ "+equipe]));
+  ch.appendChild(el("p","cad-sub",["Cadastre os atletas inscritos nesta categoria.\nNome e Sobrenome obrigatórios."]));
+  card.appendChild(ch);
+  const body=div("");card.appendChild(body);page.appendChild(card);
+
+  dbGet(cadPath).then(d=>{lista=d?.atletas||[];loading=false;rb();});
+
+  function rb(){
+    body.innerHTML="";
+    if(loading){body.appendChild(el("p","",["Carregando..."],{style:"color:#7db8d4;text-align:center"}));return;}
+    if(lista.length){
+      body.appendChild(el("div","cad-count",["✓ "+lista.length+" atleta(s) cadastrado(s)"]));
+      const al=div("cad-list");
+      lista.forEach((nome,i)=>{
+        const ai=div("cad-item");
+        const left=el("div","",[]); left.style.display="flex";left.style.alignItems="center";
+        left.appendChild(span("cad-num",String(i+1)));
+        left.appendChild(span("cad-nome",nome));
+        ai.appendChild(left);
+        ai.appendChild(btn("btn btn-remove","✕",()=>{
+          lista.splice(i,1);rb();
+          Promise.all([dbSet(cadPath,{atletas:[...lista]}),syncAtletas(equipe,cat,[...lista])]).catch(console.warn);
+        }));
+        al.appendChild(ai);
+      });
+      body.appendChild(al);
+    }else{
+      body.appendChild(el("p","empty-msg",["Nenhum atleta cadastrado ainda."]));
+    }
+
+    body.appendChild(el("p","sec-label",["Adicionar atleta"],{style:"margin-top:14px"}));
+    const nr=div("nome-row");
+    const iNome=inp("inp","Nome","",{style:"flex:1"});
+    const iSob=inp("inp","Sobrenome","",{style:"flex:1"});
+    nr.appendChild(iNome);nr.appendChild(iSob);body.appendChild(nr);
+
+    const badd=btn("btn btn-primary","+ Adicionar",()=>{
+      const n=iNome.value.trim(),s=iSob.value.trim();
+      if(!n||!s){iNome.className="inp"+(n?"":" err");iSob.className="inp"+(s?"":" err");return;}
+      const full=n+" "+s;
+      if(lista.includes(full)){alert("Atleta já cadastrado!");return;}
+      lista.push(full);
+      iNome.value="";iSob.value="";rb();
+      Promise.all([dbSet(cadPath,{atletas:[...lista]}),syncAtletas(equipe,cat,[...lista])]).catch(console.warn);
+    });
+    badd.style.cssText="width:100%;margin-top:8px;padding:12px;border-radius:12px";
+    body.appendChild(badd);
+    body.appendChild(el("p","modal-dica",["💡 Os atletas cadastrados aparecerão na hora de escalar."],{style:"margin-top:14px;font-size:12px;color:#3a5068"}));
+  }
+  rb();return page;
+}
+
+async function syncAtletas(equipe,cat,lista){
+  if(!dados.atletas)dados.atletas={};
+  dados.atletas[`${cat}__${equipe}`]=lista;
+  const payload={atletas:{}};
+  payload.atletas[`${cat}__${equipe}`]=lista;
+  await dbSet("config/dados",payload);
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER PRINCIPAL
+// ═══════════════════════════════════════════════════════════
+function render(){
+  const app=document.getElementById("app");
+  app.innerHTML="";
+
+  // 1. Link de cadastro
+  const hc=parseHashCad();
+  if(hc){app.appendChild(renderCadastro(hc.eq,hc.cat));return;}
+
+  // 2. Link de escalação
+  const allC=todosConf(dados);
+  const he=parseHashEsc(allC);
+  if(he){app.appendChild(renderCapitao(he.c,he.eq));return;}
+
+  // 3. Se tem hash de escalação mas dados ainda não carregaram
+  const rawHash=location.hash.replace("#","");
+  if(rawHash&&rawHash.includes("c=")&&rawHash.includes("e=")){
+    const loadEl=div("full-center");
+    loadEl.appendChild(div("loader spin"));
+    loadEl.appendChild(el("p","",["Carregando confronto..."]));
+    app.appendChild(loadEl);
+    dbGet("config/dados").then(d=>{
+      if(d){dados=d;render();}
+      else{
+        app.innerHTML="";
+        const err=div("full-center");
+        err.appendChild(el("div","",["😕"],{style:"font-size:52px;margin-bottom:12px"}));
+        err.appendChild(el("h3","",["Confronto não encontrado"],{style:"color:#fff;margin-bottom:8px"}));
+        err.appendChild(el("p","",["Verifique o link ou peça um novo ao organizador."],{style:"color:#475569;font-size:14px"}));
+        app.appendChild(err);
+      }
+    });
+    return;
+  }
+
+  // 4. Config ou Painel
+  if(tela==="config"){app.appendChild(renderConfig());return;}
+  app.appendChild(renderPainel());
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+async function init(){
+  const to=(p,ms=7000)=>Promise.race([p,new Promise(r=>setTimeout(()=>r(null),ms))]);
+  try{
+    const[d,q,t,r]=await Promise.all([
+      to(dbGet("config/dados")),
+      to(dbGet("quadras/estado")),
+      to(dbGet("timers/estado")),
+      to(dbGet("resultados/estado")),
+    ]);
+    if(d)dados=d;
+    if(q)quadras=q;
+    if(t)timers=t;
+    if(r)resultados=r;
+  }catch(e){console.warn("init error",e);}
+  render();
+}
+
+window.addEventListener("hashchange",()=>render());
+init();
+</script>
+</body>
+</html>
